@@ -1,0 +1,944 @@
+CALENDAR(M) 1992:1
+OPEN DATA "C:\Users\SOULEYMANE\Desktop\Financial econometrics\data_project.xlsx"
+DATA(FORMAT=XLSX,ORG=COLUMNS,SHEET="Feuil4") 1992:01 2015:12 PNFUEL PNRG PRICENPQ PWHEAMT NINO PRAWM PMETA
+
+**** Analysing the statistical properties of series
+*********Stationarity test of the series
+@DFUNIT PNFUEL
+@DFUNIT PNRG
+@DFUNIT PRICENPQ
+@DFUNIT PWHEAMT
+@DFUNIT PRAWM
+@DFUNIT PMETA
+@DFUNIT NINO
+
+***** Our series are not stationnary: we need series that are second-order stationary
+*** Transformations, we will use a return of the prices (firt difference of the log the prices)
+
+set rnfuel = (log(pnfuel/pnfuel{1}))*100
+
+set rnrg = (log(pnrg/pnrg{1}))*100
+
+set rrice = (log(pricenpq/pricenpq{1}))*100
+
+set rwheat = (log(PWHEAMT/PWHEAMT{1}))*100
+
+set rrawm = (log(prawm/prawm{1}))*100
+
+set rmeta = (log(pmeta/pmeta{1}))*100
+
+Set El_nino = 0.5
+
+set La_nina = -0.5
+
+Set El_nino_episode = nino>0.5
+
+Set La_nina_episode = nino<-0.5
+
+Set El_nino_serie = nino*El_nino_episode
+
+Set La_nia_serie = nino*La_nina_episode
+
+**** For nino, we will use the first difference in level, in order to have stationary series
+
+DIFF NINO / DNINO
+
+**** Figures of the series
+*** Climatic shocks
+GRAPH(STYLE=LINE,OVERLAY=DOTS,OVSAME,HEADER="Figure 1 : Movements of ENSO index from 1992 to 2015",SUBHEADER="Black line: index base of extremal temperature,Green line: line of La Nina, Blue line: line of El Nino",$
+ VLABEL="Value of the index ",HLABEL="Months") 3
+ # NINO
+ # EL_NINO
+ # LA_NINA
+GRAPH(STYLE=LINE) 1
+# EL_NINO_SERIE
+@DFUNIT EL_NINO_SERIE
+DIFF EL_NINO_SERIE / DELNINO
+@DFUNIT DELNINO
+
+
+
+***** Climatic shocks and the return of commodity market prices
+**** Non fuel price return and the nino index
+
+GRAPH(STYLE=LINE,OVERLAY=LINE,HEADER="Figure 23: Non Fuel price return and extremal temperature conditions",SUBHEADER="Black line: Non-fuel price return, Blue line: ENSO index",$
+ VLABEL=" Non-fuel price return ", OVLABEL=" ENSO index", HLABEL="Months") 2
+ # RNFUEL
+ # NINO
+
+**** Looking at the scatter
+
+SCATTER(STYLE=DOTS) 1
+# NINO RNFUEL
+
+GRAPH(STYLE=LINE,OVERLAY=LINE,HEADER="Figure 27: Fuel price return and extremal temperature conditions",SUBHEADER="Black line: Fuel price return, Blue line: index base of extremal temperature",$
+ VLABEL=" Fuel price return ", OVLABEL=" ENSO Index", HLABEL="Months") 2
+ # RNRG
+ # NINO
+
+SCATTER(STYLE=DOTS) 1
+# NINO RNRG
+
+GRAPH(STYLE=LINE,OVERLAY=LINE,HEADER="Figure 31: Rice price return and extremal temperature conditions",SUBHEADER="Black line: Rice price return, Blue line: index base of extremal temperature",$
+ VLABEL=" Rice price return ", OVLABEL=" ENSO Index", HLABEL="Months") 2
+ # RRICE
+ # NINO
+
+SCATTER(STYLE=DOTS) 1
+# NINO RRICE
+
+GRAPH(STYLE=LINE,OVERLAY=LINE,HEADER="Figure 34: Wheat price return and extremal temperature conditions",SUBHEADER="Black line: Wheat price return, Blue line: index base of extremal temperature",$
+ VLABEL=" Wheat price return ", OVLABEL=" ENSO Index", HLABEL="Months") 2
+ # RWHEAT
+ # NINO
+
+GRAPH(STYLE=LINE,OVERLAY=LINE,HEADER="Figure 38: Raw materiel price return and extremal temperature conditions",SUBHEADER="Black line: Raw material price return, Blue line: index base of extremal temperature",$
+ VLABEL=" Raw material price return ", OVLABEL=" ENSO Index", HLABEL="Months") 2
+ # RRAWM
+ # NINO
+
+GRAPH(STYLE=LINE,OVERLAY=LINE,HEADER="Figure 42: Metal price return and extremal temperature conditions",SUBHEADER="Black line: Metal price return, Blue line: index base of extremal temperature",$
+ VLABEL=" Metal price return ", OVLABEL=" ENSO Index", HLABEL="Months") 2
+ # RMETA
+ # NINO
+
+**** Descritpitves statistiques of the return prices
+STATS RNFUEL
+EXTREMUM RNFUEL
+
+STATS RNRG
+EXTREMUM RNRG
+
+STATS RRICE
+EXTREMUM RRICE
+
+STATS RWHEAT
+EXTREMUM RWHEAT
+
+STATS RRAWM
+EXTREMUM RRAWM
+
+STATS RMETA
+EXTREMUM RMETA
+
+***** Stationnarity of the return prices
+@DFUNIT RNFUEL
+@DFUNIT RNRG
+@DFUNIT RRICE
+@DFUNIT RWHEAT
+@DFUNIT RRAWM
+@DFUNIT RMETA
+
+**** studyng the distributionnal (Gaussian or Epachenikov?)
+***** For non fuel price return
+DENSITY(TYPE=GAUSSIAN,GRID=AUTOMATIC) RNFUEL / XG_RNFUEL G_RNFUEL
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XG_RNFUEL G_RNFUEL
+DENSITY(GRID=AUTOMATIC) RNFUEL / XE_RNFUEL E_RNFUEL
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XE_RNFUEL E_RNFUEL
+DENSITY(TYPE=HISTOGRAM,GRID=AUTOMATIC) RNFUEL / XH_RNFUEL H_RNFUEL
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XH_RNFUEL H_RNFUEL
+
+SCATTER(STYLE=LINE,VMIN=0.0, HEADER="Figure 5: Distribution of the return of non fuel price", SUBHEADER="Black line:Gaussian, Green line:Empirics (Histogram), Blue line: Epachnikov ", $
+VLABEL="Density", HLABEL="Return of non fuel price")  3
+# XG_RNFUEL G_RNFUEL
+# XE_RNFUEL E_RNFUEL
+# XH_RNFUEL H_RNFUEL
+
+***** For fuel price return
+DENSITY(TYPE=GAUSSIAN,GRID=AUTOMATIC) RNRG / XG_RNRG G_RNRG
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XG_RNRG G_RNRG
+DENSITY(GRID=AUTOMATIC) RNRG / XE_RNRG E_RNRG
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XE_RNRG E_RNRG
+DENSITY(TYPE=HISTOGRAM,GRID=AUTOMATIC) RNRG / XH_RNRG H_RNRG
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XH_RNRG H_RNRG
+
+SCATTER(STYLE=LINE,VMIN=0.0, HEADER="Figure 8: Distribution of the return of fuel price", SUBHEADER="Black line:Gaussian, Green line:Empirics (Histogram), Blue line: Epachnikov ", $
+VLABEL="Density", HLABEL="Return of fuel price")  3
+# XG_RNRG G_RNRG
+# XE_RNRG E_RNRG
+# XH_RNRG H_RNRG
+
+*** For rice
+DENSITY(TYPE=GAUSSIAN,GRID=AUTOMATIC) RRICE / XG_RRICE G_RRICE
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XG_RRICE G_RRICE
+DENSITY(GRID=AUTOMATIC) RRICE / XE_RRICE E_RRICE
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XE_RRICE E_RRICE
+DENSITY(TYPE=HISTOGRAM,GRID=AUTOMATIC) RRICE / XH_RRICE H_RRICE
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XH_RRICE H_RRICE
+
+SCATTER(STYLE=LINE,VMIN=0.0, HEADER="Figure 11: Distribution of the return of rice price", SUBHEADER="Black line:Gaussian, Green line: Empirics (Histogram), Blue line: Epachnikov", $
+VLABEL="Density", HLABEL="Return of rice price")  3
+# XG_RRICE G_RRICE
+# XE_RRICE E_RRICE
+# XH_RRICE H_RRICE
+
+*** For WHEAT
+DENSITY(TYPE=GAUSSIAN,GRID=AUTOMATIC) RWHEAT / XG_RWHEAT G_RWHEAT
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XG_RWHEAT G_RWHEAT
+DENSITY(GRID=AUTOMATIC) RWHEAT / XE_RWHEAT E_RWHEAT
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XE_RWHEAT E_RWHEAT
+DENSITY(TYPE=HISTOGRAM,GRID=AUTOMATIC) RWHEAT / XH_RWHEAT H_RWHEAT
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XH_RWHEAT H_RWHEAT
+
+SCATTER(STYLE=LINE,VMIN=0.0, HEADER=" Figure 14: Distribution of the return of wheat price", SUBHEADER="Black line:Gaussian, Green line:Empirics (Histogram), Blue line: Epachnikov", $
+VLABEL="Density", HLABEL="Return of wheat price")  3
+# XG_RWHEAT G_RWHEAT
+# XE_RWHEAT E_RWHEAT
+# XH_RWHEAT H_RWHEAT
+
+*** For RAW MATERIAL
+DENSITY(TYPE=GAUSSIAN,GRID=AUTOMATIC) RRAWM / XG_RRAWM G_RRAWM
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XG_RRAWM G_RRAWM
+DENSITY(GRID=AUTOMATIC) RRAWM / XE_RRAWM E_RRAWM
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XE_RRAWM E_RRAWM
+DENSITY(TYPE=HISTOGRAM,GRID=AUTOMATIC) RRAWM / XH_RRAWM H_RRAWM
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XH_RRAWM H_RRAWM
+
+SCATTER(STYLE=LINE,VMIN=0.0, HEADER="Distribution of the return of raw material price", SUBHEADER="Black line:Gaussian, Green line:Empirics (Histogram), Blue line: Epachnikov", $
+VLABEL="Density", HLABEL="Return of raw material price")  3
+# XG_RRAWM G_RRAWM
+# XE_RRAWM E_RRAWM
+# XH_RRAWM H_RRAWM
+
+*** For RAW MATERIAL
+DENSITY(TYPE=GAUSSIAN,GRID=AUTOMATIC) RRAWM / XG_RRAWM G_RRAWM
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XG_RRAWM G_RRAWM
+DENSITY(GRID=AUTOMATIC) RRAWM / XE_RRAWM E_RRAWM
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XE_RRAWM E_RRAWM
+DENSITY(TYPE=HISTOGRAM,GRID=AUTOMATIC) RRAWM / XH_RRAWM H_RRAWM
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XH_RRAWM H_RRAWM
+
+SCATTER(STYLE=LINE,VMIN=0.0, HEADER="Figure 17: Distribution of the return of raw material price", SUBHEADER="Black line:Gaussian, Green line:Empirics (Histogram), Blue line: Epachnikov Empirics (Histogram)", $
+VLABEL="Density", HLABEL="Return of raw material price")  3
+# XG_RRAWM G_RRAWM
+# XE_RRAWM E_RRAWM
+# XH_RRAWM H_RRAWM
+
+*** For METAL
+DENSITY(TYPE=GAUSSIAN,GRID=AUTOMATIC) RMETA / XG_RMETA G_RMETA
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XG_RMETA G_RMETA
+DENSITY(GRID=AUTOMATIC) RMETA / XE_RMETA E_RMETA
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XE_RMETA E_RMETA
+DENSITY(TYPE=HISTOGRAM,GRID=AUTOMATIC) RMETA / XH_RMETA H_RMETA
+SCATTER(STYLE=LINE,VMIN=0.0)
+# XH_RMETA H_RMETA
+
+SCATTER(STYLE=LINE,VMIN=0.0, HEADER=" Figure 20: Distribution of the return of metal price", SUBHEADER="Black line:Gaussian, Green line:Empirics (Histogram), Blue line: Epachnikov", $
+VLABEL="Density", HLABEL="Return of metal price")  3
+# XG_RMETA G_RMETA
+# XE_RMETA E_RMETA
+# XH_RMETA H_RMETA
+
+***** Influence of climatic chocks on commodity prices : a non-parametric analysis
+source(echo) kernreg.src
+
+***** For Non-Fuel price return
+@kernreg rnfuel nino 1992:01 2015:12 rnfuelfit ninofit1
+SCATTER(STYLE=line,HEADER="Figure 24: Kernel regression : Climatic changes impact on non-fuel price return", VLABEL="Non-Fuel price return", HLABEL="ENSO Index") 1
+# ninofit1 rnfuelfit
+
+**** For Fuel (Energy) Price
+@kernreg rnrg nino 1992:01 2015:12 rnrgfit ninofit2
+SCATTER(STYLE=line,HEADER="Figure 28: Kernel regression : Climatic changes impact on fuel price return", VLABEL="Fuel price return", HLABEL="ENSO index") 1
+# ninofit2 rnrgfit
+
+**** For rice
+@kernreg rrice nino 1992:01 2015:12 rricefit ninofit3
+SCATTER(STYLE=line,HEADER="Figure 32: Kernel regression : Climatic changes impact on rice price return", VLABEL="Rice price return", HLABEL="Nino index") 1
+# ninofit3 rricefit
+
+*** For Wheat
+@kernreg rwheat nino 1992:01 2015:12 rwheatfit ninofit4
+SCATTER(STYLE=line,HEADER="Figure 35: Kernel regression : Climatic changes impact on wheat price return", VLABEL="Wheat price return", HLABEL="Nino index") 1
+#  ninofit4 rwheatfit
+
+**** For Raw material
+@kernreg rrawm nino 1992:01 2015:12 rrawmfit ninofit5
+SCATTER(STYLE=line,HEADER="Figure 39: Kernel regression : Climatic changes impact on raw material price return", VLABEL="Raw material price return", HLABEL="Nino index") 1
+#  ninofit5 rrawmfit
+
+**** For metal
+@kernreg rmeta nino 1992:01 2015:12 rmetafit ninofit6
+SCATTER(STYLE=line,HEADER="Figure 43: Kernel regression : Climatic changes impact on metal price return", VLABEL="Metal price return", HLABEL="Nino index") 1
+#  ninofit6 rmetafit
+
+**** Impact of El nino and la nina on the trend of commodity prices
+***** We compute the trends from the HP filter
+GRAPH(STYLE=LINE) 1
+# PNFUEL
+FILTER(TYPE=HP) PNFUEL / PNFUELHP
+GRAPH(STYLE=LINE) 2
+# PNFUEL
+# PNFUELHP
+**** Trend from the moving average
+**** We compute the moving average -10 Months
+set y = pnfuel
+set moy = %na
+ieval compt = 1992:01
+ieval i=1
+while i.le.360
+{
+ieval j=i+1
+ieval k = j+1
+ieval l=k+1
+ieval m= l+1
+ieval n=m+1
+ieval o= n+1
+ieval p=o+1
+ieval q=p+1
+ieval r=q+1
+com mean = (y(i)+y(j)+y(k)+y(l)+y(m)+y(n)+y(o)+y(p)+y(q)+y(r))/10.0
+set mapnfuel compt compt = mean
+ieval compt=compt+1
+ieval i=i+1
+}
+end do while
+print / mapnfuel
+
+GRAPH(STYLE=LINE) 3
+# PNFUEL
+# PNFUELHP
+# MAPNFUEL
+
+**** The mooving average perform better than the HP Filter, we will then use the moving average to compute the trend
+**** We then compute the trend for the other commodity prices
+*** For Fuel price
+set y = pnrg
+set mapnrg = %na
+ieval compt = 1992:01
+ieval i=1
+while i.le.360
+{
+ieval j=i+1
+ieval k = j+1
+ieval l=k+1
+ieval m= l+1
+ieval n=m+1
+ieval o= n+1
+ieval p=o+1
+ieval q=p+1
+ieval r=q+1
+com mean = (y(i)+y(j)+y(k)+y(l)+y(m)+y(n)+y(o)+y(p)+y(q)+y(r))/10.0
+set mapnrg compt compt = mean
+ieval compt=compt+1
+ieval i=i+1
+}
+end do while
+print / mapnrg
+
+**** For Rice
+set y = pricenpq
+set mapricenpq = %na
+ieval compt = 1992:01
+ieval i=1
+while i.le.360
+{
+ieval j=i+1
+ieval k = j+1
+ieval l=k+1
+ieval m= l+1
+ieval n=m+1
+ieval o= n+1
+ieval p=o+1
+ieval q=p+1
+ieval r=q+1
+com mean = (y(i)+y(j)+y(k)+y(l)+y(m)+y(n)+y(o)+y(p)+y(q)+y(r))/10.0
+set mapricenpq compt compt = mean
+ieval compt=compt+1
+ieval i=i+1
+}
+end do while
+print / mapricenpq
+
+**** For Wheat
+set y = pwheamt
+set mapwheamt = %na
+ieval compt = 1992:01
+ieval i=1
+while i.le.360
+{
+ieval j=i+1
+ieval k = j+1
+ieval l=k+1
+ieval m= l+1
+ieval n=m+1
+ieval o= n+1
+ieval p=o+1
+ieval q=p+1
+ieval r=q+1
+com mean = (y(i)+y(j)+y(k)+y(l)+y(m)+y(n)+y(o)+y(p)+y(q)+y(r))/10.0
+set mapwheamt compt compt = mean
+ieval compt=compt+1
+ieval i=i+1
+}
+end do while
+print / mapwheamt
+
+*** Raw material
+set y = prawm
+set maprawm = %na
+ieval compt = 1992:01
+ieval i=1
+while i.le.360
+{
+ieval j=i+1
+ieval k = j+1
+ieval l=k+1
+ieval m= l+1
+ieval n=m+1
+ieval o= n+1
+ieval p=o+1
+ieval q=p+1
+ieval r=q+1
+com mean = (y(i)+y(j)+y(k)+y(l)+y(m)+y(n)+y(o)+y(p)+y(q)+y(r))/10.0
+set maprawm compt compt = mean
+ieval compt=compt+1
+ieval i=i+1
+}
+end do while
+print / maprawm
+
+*** For Metal
+set y = pmeta
+set mapmeta = %na
+ieval compt = 1992:01
+ieval i=1
+while i.le.360
+{
+ieval j=i+1
+ieval k = j+1
+ieval l=k+1
+ieval m= l+1
+ieval n=m+1
+ieval o= n+1
+ieval p=o+1
+ieval q=p+1
+ieval r=q+1
+com mean = (y(i)+y(j)+y(k)+y(l)+y(m)+y(n)+y(o)+y(p)+y(q)+y(r))/10.0
+set mapmeta compt compt = mean
+ieval compt=compt+1
+ieval i=i+1
+}
+end do while
+print / mapmeta
+
+***** Impact of El Nino or La nina on the trends of commodities
+*** Non-parametric regression
+*** NINO and non-fuel price trend
+@kernreg mapnfuel nino 1992:01 2015:12 mapnfuelfit ninofit11
+SCATTER(STYLE=line,HEADER="Figure 25: Kernel regression : Climatic changes impact on non-fuel price trend", VLABEL="Non-Fuel price trend", HLABEL="ENSO Index") 1
+#  ninofit11 mapnfuelfit
+
+*** NINO and fuel price trend
+@kernreg mapnrg nino 1992:01 2015:12 mapnrgfit ninofit12
+SCATTER(STYLE=line,HEADER="Figure 29: Kernel regression : Climatic changes impact on fuel price trend", VLABEL="Fuel price trend", HLABEL="ENSO index") 1
+#  ninofit12 mapnrgfit
+
+*** NINO and rice price trend
+@kernreg mapricenpq nino 1992:01 2015:12 mapricenpqfit ninofit13
+SCATTER(STYLE=line,HEADER="Figure 32: Kernel regression : Climatic changes impact on rice price trend", VLABEL="rice price trend", HLABEL="Nino index") 1
+# ninofit13 mapricenpqfit
+
+*** NINO and wheat price trend
+@kernreg mapwheamt nino 1992:01 2015:12 mapwheamtfit ninofit14
+SCATTER(STYLE=line,HEADER="Figure 36: Kernel regression : Climatic changes impact on wheat price trend", VLABEL="Wheat price trend", HLABEL="Nino index") 1
+# ninofit14 mapwheamtfit
+
+*** NINO and raw material price trend
+@kernreg maprawm nino 1992:01 2015:12 maprawmfit ninofit15
+SCATTER(STYLE=line,HEADER="Figure 40: Kernel regression : Climatic changes impact on raw material price trend", VLABEL="Raw material price trend", HLABEL="Nino index") 1
+# ninofit15 maprawmfit
+
+*** NINO and metal price trend
+@kernreg mapmeta nino 1992:01 2015:12 mapmetafit ninofit16
+SCATTER(STYLE=line,HEADER="Figure 44: Kernel regression : Climatic changes impact on metal price trend", VLABEL="Metal price trend", HLABEL="Nino index") 1
+# ninofit16 mapmetafit
+
+***** Spectral analysis of the series
+**** For NINO
+DIFF LA_NIA_SERIE / DLANINA
+@DFUNIT DLANINA
+
+source(echo) spectrum.src
+@spectrum(window=flat, taper=trap, header="Figure 2 : periodogram of ENSO index") dnino
+@spectrum(window=flat, taper=trap, header="Figure 3 : periodogram of EL NINO event from ENSO index") delnino
+@spectrum(window=flat, taper=trap, header="Figure 4 : periodogram of LA NINA event from ENSO index") dlanina
+
+*** For non fuel price return
+
+@spectrum(window=flat, taper=trap, header="Figure 6: Periodogram of the return non-fuel price") rnfuel
+
+**** The memory of rnfuel
+
+CORRELATE(NUMBER=50,CORRS=rnfuel_ACF,METHOD=YULE) rnfuel 1992:01 2015:12
+GRAPH(STYLE=OVERLAP,HEADER=" Figure 7: ACF OF THE PRICE RETURN OF NON FUEL",KEY=UPRIGHT,NODATES,vlabel="Autocorrelation coefficients", hlabel="lags") 1
+# RNFUEL_ACF
+
+*** For Fuel price return
+@spectrum(window=flat, taper=trap, header="Figure 9: Periodogram of the return of fuel price") rnrg
+
+**** The memory of rnrg
+
+CORRELATE(NUMBER=50,CORRS=rnrg_ACF,METHOD=YULE) rnrg 1992:01 2015:12
+GRAPH(STYLE=OVERLAP,HEADER="Figure 10: ACF OF THE PRICE RETURN OF FUEL",KEY=UPRIGHT,NODATES,vlabel="Autocorrelation coefficients", hlabel="lags") 1
+# RNRG_ACF
+
+*** For rice price return
+@spectrum(window=flat, taper=trap, header=" Figure 12: Periodogram of the return of rice price") rrice
+
+**** The memory of rrice
+
+CORRELATE(NUMBER=50,CORRS=rrice_ACF,METHOD=YULE) rrice 1992:01 2015:12
+GRAPH(STYLE=OVERLAP,HEADER=" Figure 13: ACF OF THE PRICE RETURN OF RICE",KEY=UPRIGHT,NODATES,vlabel="Autocorrelation coefficients", hlabel="lags") 1
+# RRICE_ACF
+
+*** For wheat price return
+@spectrum(window=flat, taper=trap, header="Figure 15: Periodogram of the return of wheat price") rwheat
+
+**** The memory of rwheat
+
+CORRELATE(NUMBER=50,CORRS=rwheat_ACF,METHOD=YULE) rwheat 1992:01 2015:12
+GRAPH(STYLE=OVERLAP,HEADER=" Figure 16: ACF OF THE PRICE RETURN OF WHEAT",KEY=UPRIGHT,NODATES,vlabel="Autocorrelation coefficients", hlabel="lags") 1
+# RWHEAT_ACF
+
+*** For raw material price return
+@spectrum(window=flat, taper=trap, header="Figure 18: Periodogram of the return of agricultura raw material price") rrawm
+
+**** The memory of rrawm
+
+CORRELATE(NUMBER=50,CORRS=rrawm_ACF,METHOD=YULE) rrawm 1992:01 2015:12
+GRAPH(STYLE=OVERLAP,HEADER="Figure 19: ACF OF THE PRICE RETURN OF AGRICULTURAL RAW MATERIAL",KEY=UPRIGHT,NODATES,vlabel="Autocorrelation coefficients", hlabel="lags") 1
+# RRAWM_ACF
+
+*** For metal price return
+@spectrum(window=flat, taper=trap, header="Figure 21: Periodogram of the return of metal price") rmeta
+
+**** The memory of rmeta
+
+CORRELATE(NUMBER=50,CORRS=rmetal_ACF,METHOD=YULE) rmeta 1992:01 2015:12
+GRAPH(STYLE=OVERLAP,HEADER=" Figure 22: ACF OF THE PRICE RETURN OF METAL",KEY=UPRIGHT,NODATES,vlabel="Autocorrelation coefficients", hlabel="lags") 1
+# RMETAL_ACF
+
+**** Co-spectral analysis
+source(echo) cospectrum.src
+**** Impact of nino on non-fuel price return
+@crosspec(window = tent, graph, header="crospectrum analysis of nino and non-fuel price index") rnfuel dnino
+source(echo) gain.src
+@gain(WINDOW = TENT, graph, header="Gain analysis of nino and non-fuel price return") rnfuel dnino
+
+**** Impact of nino on fuel price return
+@crosspec(window = tent, graph, header="crospectrum analysis of nino and fuel price return") rnrg dnino
+
+@gain(WINDOW = TENT, graph, header="Gain analysis of nino and fuel price return") rnrg dnino
+
+****** Impact of nino on rice price return
+@crosspec(window = tent, graph, header="crospectrum analysis of nino and rice price return") rrice dnino
+
+@gain(WINDOW = TENT, graph, header="Gain analysis of nino and rice price return") rrice dnino
+
+****** Impact of nino on wheat price return
+@crosspec(window = tent, graph, header="crospectrum analysis of nino and wheat price return") rwheat dnino
+
+@gain(WINDOW = TENT, graph, header="Gain analysis of nino and wheat price return") rwheat dnino
+
+****** Impact of nino on raw material price return
+@crosspec(window = tent, graph, header="crospectrum analysis of nino and raw material price return") rrawm dnino
+
+@gain(WINDOW = TENT, graph, header="Gain analysis of nino and raw material price return") rrawm dnino
+
+****** Impact of nino on metal price return
+@crosspec(window = tent, graph, header="crospectrum analysis of nino and metal price return") rmeta dnino
+
+@gain(WINDOW = TENT, graph, header="Gain analysis of nino and metal price return") rmeta dnino
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

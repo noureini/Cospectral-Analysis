@@ -1,0 +1,147 @@
+*
+*  @CROSSPEC( options )   series1  series2   start  end
+*
+*  Computes and optionally graphs the estimated coherence and phase of a
+*  pair or series. series1 is treated as the "output" for the purposes of
+*  interpreting the phase, and series2 as the "input", so a positive
+*  value means 2 is that fraction of a cycle ahead of 1.
+*
+*  Options:
+*    ORDINATES=Number of ordinates [depends upon length,seasonal]
+*    WINDOW=[FLAT]/TENT/QUADRATIC
+*    WIDTH=Window width [depends upon ordinates]
+*
+*    [GRAPH]/NOGRAPH
+*    HEADER=Header for graph
+*    FOOTER=Footer for graph
+*
+*    PHASE=series for [0,pi] phase lead (0 frequency at entry 1)
+*    COHERENCE=series for [0,pi] coherence (0 frequency at entry 1)
+*
+*  Revision schedule
+*    04/1995 Replaced SPGRAPH(TWOSCALE) with GRAPH(OVERLAY=LINE,...)
+*    04/1995 COMPUTE HALF added
+*    10/1999 Update to version 5.0 replacing GRAPH with SCATTER.
+*    05/2005 Add calculation of the gain (from series2 to series1)
+*    07/2007 Add FOOTER option and WINDOW=QUADRATIC
+*    07/2015 Add COHERENCE and PHASE options
+*
+procedure crosspec series1 series2 start end
+type series series1 series2
+type integer start end
+
+local integer i nobs startl endl freqords half
+local series  lcoherence lphase cuspec frequencies lcospec
+local real    scalefac
+
+option int      width
+option int      ordinate
+option choice   window   1 flat tent quadratic
+option switch   graph    1
+option string   header
+option string   footer
+option series   *phase
+option series   *coherence
+option series   *cospec
+*
+if .not.%defined(series1).or..not.%defined(series2) {
+   display "Syntax: @crosspec series1 series2 start end"
+   return
+}
+*
+* Set the range to the maximum allowed by the series pair
+* if start and end aren't provided.
+*
+inquire(reglist) startl<<start endl<<end
+# series1 series2
+
+compute nobs=endl-startl+1
+
+if .not.%defined(ordinate).or.ordinate<nobs
+   compute freqords = %freqsize(nobs)
+else
+   compute freqords = ordinate
+
+compute half = freqords/2+1
+frequency 11 freqords
+rtoc(pad)  startl  endl  1
+# series1 series2
+#   1       2
+*
+* Compute the two periodograms (into 3 and 4) and the
+* cross periodogram (into 5)
+*
+fft 1
+fft 2
+compute scalefac=1./(2.*%pi*nobs)
+cmult(scale=scalefac) 1 1 / 3
+cmult(scale=scalefac) 2 2 / 4
+cmult(scale=scalefac) 1 2 / 5
+
+
+*
+* Smooth them into 6, 7 and 8
+*
+do i=3,5
+  window(type=window,width=width) i / i+3
+end do
+
+ctor 1 half
+#  8
+# lcospec
+*
+* Compute the gain from 2 to 1
+*
+cset 11 = %cabs(%z(t,8))/%z(t,7)
+*
+* Normalize by the spectral densities
+*
+cset 8 = %z(t,8)/%csqrt(%z(t,6)*%z(t,7))
+*
+* Decompose into the coherence and phase
+*
+polar  8 / 9 10
+ctor 1 half
+#  9  10
+# lcoherence lphase
+*
+
+
+if %defined(phase)
+   set phase 1 half = lphase
+if %defined(coherence)
+   set coherence 1 half = lcoherence
+*
+
+
+if graph
+   {
+   set lphase      1 half = lphase/%pi
+   set frequencies 1 half = (t-1.0)/half
+   
+ *
+ print 1 half lcospec lcoherence lphase frequencies
+
+scatter(key=below,style=line,hlabel="Fractions of pi",$
+      klabels=||"Coherence"||,vmin=0.0,omin=-1.0,omax=1.0,$
+      header="coherence",footer=footer) 1
+   # frequencies lcoherence 1 half
+  
+ scatter(key=below,style=line,hlabel="Fractions of pi",$
+      klabels=||"phase"||,omin=-1.0,omax=1.0,$
+      header="phase",footer=footer) 1
+    # frequencies lphase     1 half  
+
+scatter(key=below,style=line,hlabel="Fractions of pi",$
+      klabels=||"crosspectrum"||,omin=-1.0,omax=1.0,$
+      header="cospectrum",footer=footer) 1
+   # frequencies lcospec 1 half
+
+}
+
+
+
+
+
+
+end crosspec

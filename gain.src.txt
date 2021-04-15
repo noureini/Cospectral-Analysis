@@ -1,0 +1,80 @@
+*
+* @GAIN( options )   series1  series2   start  end
+* Computes and optionally graphs the estimated gain and phase of a pair of series.
+*
+* Options:
+*   ORDINATES=Number of ordinates [depends upon length,seasonal]
+*   WINDOW=[FLAT]/TENT
+*   WIDTH=Window width [depends upon ordinates]
+*   [GRAPH]/NOGRAPH
+*   HEADER=Header for graph
+*
+* Revision Schedule:
+*   05/1992 Written by Tom Doan, Estima
+*
+procedure gain series1 series2 start end
+type series series1 series2
+type integer start end
+
+local integer nobs   startl endl freqords span i
+local series  gain21 phase harmonic
+local real    scalefac
+
+option int      width
+option int      ordinate
+option choice   window   1 flat tent
+option switch   graph    1
+option string   header
+
+if .not.%defined(series1).or..not.%defined(series2) {
+   display 'Syntax: @GAIN series1 series2 start end'
+   return
+}
+
+inquire(reglist) startl<<start endl<<end
+# series1 series2
+
+compute nobs=endl-startl+1
+
+if .not.%defined(ordinate).or.ordinate<nobs
+   compute freqords = %freqsize(nobs)
+else
+   compute freqords = ordinate
+
+if %clock(freqords,12)==12
+   compute span=12
+else
+   compute span=4
+
+frequency 10 freqords
+rtoc(pad)  startl  endl  1
+# series1 series2
+#   1       2
+fft 1
+fft 2
+compute scalefac=1./(2.*%pi*nobs)
+cmult(scale=scalefac) 1 1 / 3
+cmult(scale=scalefac) 2 2 / 4
+cmult(scale=scalefac) 1 2 / 5
+do i=3,5
+  window(type=window,width=width) i / i+3
+end do
+cset 8 = %z(t,8)/%cabs(%z(t,6))
+polar  8 / 9 10
+if graph
+   {
+   ctor 1 (freqords+1)/2
+   #    9      10
+   #  gain21  phase
+   set phase    1 (freqords+1)/2 = phase/%pi
+   set harmonic 1 (freqords+1)/2 = %clock(t,freqords/span)==1
+   *spgraph(twoscale)
+   graph(noticks,grid=harmonic,min=0.0,header=header) 1
+   # gain21 1 (freqords+1)/2 
+   *graph(noticks,min=-1.0,max=1.0) 1
+  * # phase  1 (freqords+1)/2
+   *spgraph(done)
+print 1 gain21
+   }
+end gain
+
